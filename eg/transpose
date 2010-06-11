@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+#
+# Parse ly note notation and apply a transposition to them. This is a
+# very primitive lexer, so may cause unexpected changes in LilyPond
+# input. Either restrict the input to note sequences:
+#
+# % echo 'b4 e dis e fis cis fis2 e4 dis cis dis e2 b' | ./transpose -t 1
+# c4 f e f g d g2 f4 e d e f2 c
+#
+# Or use diff(1) to inspect that the output looks correct.
+
+use strict;
+use warnings;
+
+my $transpose_distance;
+
+########################################################################
+#
+# MAIN
+
+use Music::LilyPond::Scale::Chromatic ();
+
+use Getopt::Long qw(GetOptions);
+GetOptions( 'transpose|t=s' => \$transpose_distance, );
+
+my $note_count       = 0;
+my $accidental_count = 0;
+
+while ( my $line = <> ) {
+  # .ly comments (TODO support annoying multi-line comment blocks)
+  if ( $line =~ m/^\s*%/ ) {
+    print $line;
+    next;
+  }
+
+LOOP: {
+    # in-line comments
+    if ( $line =~ m/\G(\s*%\s.*)/cg ) {
+      print $1;
+      redo LOOP;
+    }
+    # Double-quoted strings (^"Adagio" and the like)
+    if ( $line =~ m/\G("( (?: \\"|[^"] )*? )"\s*)/cgx ) {
+      print $1;
+      redo LOOP;
+    }
+    # Notable keywords that take note values we should not trample
+    if ( $line =~ m/\G(\\(?:key|relative)\s+\w)/cg ) {
+      print $1;
+      redo LOOP;
+    }
+    # Other keywords
+    if ( $line =~ m/\G(\\[a-zA-Z]+\s*)/cg ) {
+      print $1;
+      redo LOOP;
+    }
+    if ( $line =~ m/\G([cdefgab](?:[ie]s)*)/cg ) {
+      my $note = Music::LilyPond::Scale::Chromatic->new($1);
+      $note->transpose($transpose_distance)
+        if defined $transpose_distance;
+      print $note->as_string;
+      ++$note_count;
+      ++$accidental_count unless $note->get_accidental == 0;
+      redo LOOP;
+    }
+    # Skip over non-note and non-special-to-LilyPond values
+    if ( $line =~ m/\G([^cdefgab%\\"]+|\s+)/cg ) {
+      print $1;
+      redo LOOP;
+    }
+  }
+}
+warn
+  "info: stats: note_count=$note_count, accidental_count=$accidental_count\n";

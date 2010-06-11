@@ -1,0 +1,10 @@
+eg/transpose
+lib/Music/LilyPond/Scale/Chromatic.pm
+LICENSE
+Makefile
+Makefile.PL
+MANIFEST
+META.yml
+README
+t/010-chromatic.t
+t/pod.t
