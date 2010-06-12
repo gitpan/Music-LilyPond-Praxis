@@ -56,9 +56,10 @@ $n->set_value(15);
 is( $n->get_value, 3, 'check modulated note value' );
 
 # Inversion, no axis
+# http://en.wikipedia.org/wiki/Permutation_%28music%29
 for my $ref (
-  [qw/0 11/], [qw/1 10/], [qw/2 9/], [qw/3 8/], [qw/4 7/],  [qw/5 6/],
-  [qw/6 5/],  [qw/7 4/],  [qw/8 3/], [qw/9 2/], [qw/10 1/], [qw/11 0/]
+  [qw/0 0/], [qw/1 11/], [qw/2 10/], [qw/3 9/], [qw/4 8/],  [qw/5 7/],
+  [qw/6 6/], [qw/7 5/],  [qw/8 4/],  [qw/9 3/], [qw/10 2/], [qw/11 1/]
   ) {
   is( $n->set_value( $ref->[0] )->invert->get_value,
     $ref->[1], "no axis inversion on " . $ref->[0] );

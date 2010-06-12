@@ -1,0 +1,49 @@
+#!/usr/bin/perl
+#
+# Generate LilyPond output that illustrates what the invert method does.
+
+use strict;
+use warnings;
+
+use Music::LilyPond::Scale::Chromatic ();
+my $n = Music::LilyPond::Scale::Chromatic->new();
+
+print <<'HEADER';
+\version "2.12.3"
+\book {
+  \score { << {
+    \time 2/4
+    \tempo 4=75
+HEADER
+
+my @notes;
+
+for my $invert_by ( 0 .. 11 ) {
+  for my $v ( 0 .. 11 ) {
+    my $base = $n->set_value($v)->as_string;
+    my $b_v  = $n->get_value;
+    $base .= q{'};
+
+    if ( $v == 0 ) {
+      my $ibn = $n->set_value($invert_by)->as_string;
+      $base .= qq/^"axis: $ibn"/;
+    }
+    push @notes, $base;
+
+    my $invert = $n->invert($invert_by)->as_string;
+    my $i_v    = $n->get_value;
+    $invert .= q{'};
+
+    push @notes, $invert;
+  }
+}
+
+print join( q{ }, @notes ), "\n";
+
+print <<'FOOTER';
+  } >>
+  \layout { }
+  \midi { }
+  }
+}
+FOOTER

@@ -78,8 +78,6 @@ my $_parse_note = sub {
     # count "is" (sharp) or "es" (flat) in string. LilyPond uses
     # "isis" for double sharp, though this code supports probably
     # invalid input such as "isisises"
-    # TODO if use m//g might need to fiddle with pos() if that
-    # influences the new_lex...
     $sharp_or_flat += ( $accidental =~ tr/i// );
     $sharp_or_flat -= ( $accidental =~ tr/e// );
   }
@@ -230,7 +228,7 @@ sub invert {
     }
     $self->{_note} = $axis_value + -1 * ( $self->{_note} - $axis_value );
   } else {
-    $self->{_note} = $DEGREES_IN_SCALE - 1 - $self->{_note};
+    $self->{_note} = $DEGREES_IN_SCALE - $self->{_note};
   }
   $self->{_note} %= $DEGREES_IN_SCALE;
   return $self;

@@ -5,7 +5,7 @@ name 'Music-LilyPond-Praxis';
 
 abstract     'LilyPond utility classes';
 author       'Jeremy Mates <jmates@sial.org';
-version      '0.01';
+version      '0.02';
 license      'artistic';
 perl_version '5.006';
 
