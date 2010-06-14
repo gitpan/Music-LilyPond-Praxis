@@ -1,0 +1,22 @@
+--- #YAML:1.0
+name: Music-LilyPond-Praxis
+abstract: LilyPond utility classes
+version: 0.03
+author:
+  - Jeremy Mates <jmates@sial.org>
+license: artistic
+distribution_type: module
+requires:
+  Carp: 0
+  List::Util: 0
+  Scalar::Util: 0
+  perl: 5.008
+build_requires:
+  Test::More: 0
+resources:
+  license: http://dev.perl.org/licenses/artistic.html
+  repository: http://github.com/thrig/Music-LilyPond-Praxis
+meta-spec:
+  version: 1.4
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+generated_by: hand

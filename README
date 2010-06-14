@@ -5,4 +5,8 @@ make
 make test
 make install
 
-Run perldoc(1) on the module files for more documentation.
+Run perldoc(1) on the module files for more documentation. See also:
+
+http://github.com/thrig/Music-LilyPond-Praxis
+
+http://search.cpan.org/dist/Music-LilyPond-Praxis/

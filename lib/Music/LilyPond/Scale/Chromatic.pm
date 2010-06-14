@@ -14,7 +14,7 @@ use warnings;
 
 use Carp qw/croak/;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 my $DEGREES_IN_SCALE = 12;
 
@@ -363,11 +363,11 @@ Returns the internal numeric value for the note.
 =head1 BUGS
 
 No known bugs.
-  
+
 =head2 Reporting Bugs
-  
+
 Newer versions of this module may be available from CPAN.
-  
+
 If the bug is in the latest version, send a report to the author.
 Patches that fix problems or add new features are welcome.
 

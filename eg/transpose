@@ -1,74 +1,93 @@
 #!/usr/bin/perl
 #
 # Parse ly note notation and apply a transposition to them. This is a
-# very primitive lexer, so may cause unexpected changes in LilyPond
-# input. Either restrict the input to note sequences:
+# very primitive lexer, so will cause unexpected changes in LilyPond
+# input. Restrict the input to note sequences:
 #
-# % echo 'b4 e dis e fis cis fis2 e4 dis cis dis e2 b' | ./transpose -t 1
+# % echo 'b4 e dis e fis cis fis2 e4 dis cis dis e2 b' | ./transpose t=1
 # c4 f e f g d g2 f4 e d e f2 c
 #
-# Or use diff(1) to inspect that the output looks correct.
+# Notes must be supplied on standard input, as the argument list is
+# reserved for an arbitrary list of transposition and inversion
+# operations:
+#
+# % echo b | ./transpose t=2 i
+# b
 
 use strict;
 use warnings;
 
-my $transpose_distance;
+use Getopt::Long qw(GetOptions);
+use Music::LilyPond::Scale::Chromatic ();
+
+my @operations;
+my $is_quiet = 0;
 
 ########################################################################
 #
 # MAIN
 
-use Music::LilyPond::Scale::Chromatic ();
+GetOptions( 'quiet|q' => \$is_quiet );
 
-use Getopt::Long qw(GetOptions);
-GetOptions( 'transpose|t=s' => \$transpose_distance, );
+for my $operation (@ARGV) {
+  my ( $key, $value ) = split '=', $operation, 2;
+  next unless defined $key;
+  push @operations,
+    { op => $key, ( defined $value ? ( value => $value ) : () ) };
+}
 
 my $note_count       = 0;
 my $accidental_count = 0;
 
-while ( my $line = <> ) {
-  # .ly comments (TODO support annoying multi-line comment blocks)
-  if ( $line =~ m/^\s*%/ ) {
-    print $line;
-    next;
-  }
-
+while ( my $data = <STDIN> ) {
 LOOP: {
-    # in-line comments
-    if ( $line =~ m/\G(\s*%\s.*)/cg ) {
+    # in-line comments - TODO support those horrid multiline comments?
+    # Easier: just say no.
+    if ( $data =~ m/\G(\s*%\s.*$)/cgm ) {
       print $1;
       redo LOOP;
     }
     # Double-quoted strings (^"Adagio" and the like)
-    if ( $line =~ m/\G("( (?: \\"|[^"] )*? )"\s*)/cgx ) {
+    if ( $data =~ m/\G("( (?: \\"|[^"] )*? )"\s*)/cgx ) {
       print $1;
       redo LOOP;
     }
     # Notable keywords that take note values we should not trample
-    if ( $line =~ m/\G(\\(?:key|relative)\s+\w)/cg ) {
+    if ( $data =~ m/\G(\\(?:key|relative)\s+\w)/cg ) {
       print $1;
       redo LOOP;
     }
     # Other keywords
-    if ( $line =~ m/\G(\\[a-zA-Z]+\s*)/cg ) {
+    if ( $data =~ m/\G(\\[a-zA-Z]+\s*)/cg ) {
       print $1;
       redo LOOP;
     }
-    if ( $line =~ m/\G([cdefgab](?:[ie]s)*)/cg ) {
+    if ( $data =~ m/\G([cdefgab](?:[ie]s)*)/cg ) {
       my $note = Music::LilyPond::Scale::Chromatic->new($1);
-      $note->transpose($transpose_distance)
-        if defined $transpose_distance;
+
+      for my $op_ref (@operations) {
+        if ( $op_ref->{op} eq 't' or $op_ref->{op} =~ m/^trans/ ) {
+          $note->transpose( $op_ref->{value} );
+        } elsif ( $op_ref->{op} eq 'i' or $op_ref->{op} =~ m/^inv/ ) {
+          $note->invert( exists $op_ref->{value} ? $op_ref->{value} : () );
+        } else {
+          die "unknown operator: " . $op_ref->{key} . "\n";
+        }
+      }
+
       print $note->as_string;
       ++$note_count;
       ++$accidental_count unless $note->get_accidental == 0;
       redo LOOP;
     }
     # Skip over non-note and non-special-to-LilyPond values
-    if ( $line =~ m/\G([^cdefgab%\\"]+|\s+)/cg ) {
+    if ( $data =~ m/\G([^cdefgab%\\"]+|\s+)/cg ) {
       print $1;
       redo LOOP;
     }
   }
 }
+
 warn
-  "info: stats: note_count=$note_count, accidental_count=$accidental_count\n";
+  "info: stats: note_count=$note_count, accidental_count=$accidental_count\n"
+  unless $is_quiet;

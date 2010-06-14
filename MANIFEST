@@ -1,12 +1,14 @@
 eg/inversions
 eg/transpose
 lib/Music/LilyPond/Scale/Chromatic.pm
+lib/Music/LilyPond/Set.pm
 LICENSE
 Makefile.PL
 MANIFEST
 META.yml
 README
 t/010-chromatic.t
+t/020-set.t
 t/pod.t
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
